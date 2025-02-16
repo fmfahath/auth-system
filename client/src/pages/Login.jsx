@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 const Login = () => {
 
     const navigate = useNavigate()
-    const [state, setState] = useState('Sign Up')
+    const [state, setState] = useState('Login')
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -95,7 +95,7 @@ const Login = () => {
 
                     <p className='mb-4 text-indigo-500 cursor-pointer' onClick={() => navigate('/reset-password')}>Forgot password ?</p>
 
-                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium'>{state}</button>
+                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>{state}</button>
 
                 </form>
 
