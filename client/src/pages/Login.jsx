@@ -13,7 +13,7 @@ const Login = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
-    const { backendUrl, setIsLoggedin } = useContext(AppContent)
+    const { backendUrl, setIsLoggedin, getUserData } = useContext(AppContent)
 
     const onSubmitHandler = async (e) => {
         try {
@@ -25,6 +25,7 @@ const Login = () => {
 
                 if (data.success) {
                     setIsLoggedin(true);
+                    getUserData();
                     navigate('/')
                 }
                 else {
@@ -35,6 +36,7 @@ const Login = () => {
 
                 if (data.success) {
                     setIsLoggedin(true);
+                    getUserData();
                     navigate('/')
                 }
                 else {
