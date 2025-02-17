@@ -1,12 +1,21 @@
-import React, { useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { AppContent } from '../context/AppContext'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const ResetPassword = () => {
 
+    axios.defaults.withCredentials = true;
+
+    const { backendUrl, getUserData, isLoggedin, userData } = useContext(AppContent)
     const navigate = useNavigate()
     const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+    const [newPassword, setNewPassword] = useState("")
+    const [isEmailSend, setisEmailSend] = useState(false)
+    const [otp, setOtp] = useState(0)
+    const [isOtpSubmitted, setIsOtpSubmitted] = useState(false)
     const inputRef = useRef([])
 
     const inputHandler = (e, index) => {
@@ -31,74 +40,109 @@ const ResetPassword = () => {
         })
     }
 
-    const onSubmitHandler = (e) => {
+    const onSubmitEmail = async (e) => {
+        e.preventDefault()
+
         try {
-            e.preventDefault();
+            const { data } = await axios.post(backendUrl + '/api/auth/send-reset-otp', { email })
 
-
+            data.success ? toast.success(data.message) : toast.error(data.message)
+            data.success && setisEmailSend(true)
         } catch (error) {
-
+            toast.error(error.message)
         }
     }
+
+    const onSubmitOtp = async (e) => {
+        e.preventDefault()
+
+        const otpArray = inputRef.current.map(item => item.value)
+        const otp = otpArray.join('')
+
+        setOtp(otp)
+        setIsOtpSubmitted(true)
+    }
+
+    const onSubmitNewPassword = async (e) => {
+        e.preventDefault()
+
+        try {
+            const { data } = await axios.post(backendUrl + '/api/auth/reset-password', { email, otp, newPassword })
+
+            data.success ? toast.success(data.message) : toast.error(data.message)
+            data.success && navigate('/login')
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+
+
 
     return (
         <div className='flex items-center justify-center min-h-screen  bg-gradient-to-br from-blue-200 to-purple-400'>
             <img src={assets.logo} alt='login-logo' className='absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer' onClick={() => navigate('/')} />
-            <form className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm' onSubmit={onSubmitHandler}>
-                <h1 className='text-white text-2xl text-semibold text-center mb-4'>Reset Password</h1>
-                <p className='text-indigo-300 text-center mb-6'>Enter your email address</p>
-                <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-                    <img src={assets.mail_icon} alt="person-icon" />
-                    <input
-                        className='bg-transparent outline-none text-white'
-                        type="mail"
-                        placeholder='Email'
-                        required
-                        onChange={(e) => setEmail(e.target.value)}
-                        value={email}
-                    />
-                </div>
-                <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>Send Reset Email</button>
-            </form>
+            {!isEmailSend &&
+                <form className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm' onSubmit={onSubmitEmail}>
+                    <h1 className='text-white text-2xl text-semibold text-center mb-4'>Reset Password</h1>
+                    <p className='text-indigo-300 text-center mb-6'>Enter your email address</p>
+                    <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
+                        <img src={assets.mail_icon} alt="person-icon" />
+                        <input
+                            className='bg-transparent outline-none text-white'
+                            type="mail"
+                            placeholder='Email'
+                            required
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}
+                        />
+                    </div>
+                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>Send Reset Email</button>
+                </form>
+            }
 
             {/* OTP form */}
-            <form className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-                <h1 className='text-white text-2xl text-semibold text-center mb-4'>Verify Email</h1>
-                <p className='text-indigo-300 text-center mb-6'>Enter the 6-digit code sent to your email ID</p>
-                <div className='flex justify-between mb-8' onPaste={handlePaste}>
-                    {Array(6).fill(0).map((_, index) => (
-                        <input
-                            className='w-12 h-12 bg-[#333A5C] mb-8 rounded-md text-white text-center text-xl'
-                            type='text'
-                            maxLength='1'
-                            key={index}
-                            required
-                            ref={e => inputRef.current[index] = e}
-                            onInput={(e) => inputHandler(e, index)}
-                            onKeyDown={(e) => keyDownhandler(e, index)}
-                        />
-                    ))}
-                </div>
-                <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>Verify OTP</button>
-            </form>
 
+            {!isOtpSubmitted && isEmailSend &&
+                <form className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm' onSubmit={onSubmitOtp}>
+                    <h1 className='text-white text-2xl text-semibold text-center mb-4'>Verify Email</h1>
+                    <p className='text-indigo-300 text-center mb-6'>Enter the 6-digit code sent to your email ID</p>
+                    <div className='flex justify-between mb-8' onPaste={handlePaste}>
+                        {Array(6).fill(0).map((_, index) => (
+                            <input
+                                className='w-12 h-12 bg-[#333A5C] mb-8 rounded-md text-white text-center text-xl'
+                                type='text'
+                                maxLength='1'
+                                key={index}
+                                required
+                                ref={e => inputRef.current[index] = e}
+                                onInput={(e) => inputHandler(e, index)}
+                                onKeyDown={(e) => keyDownhandler(e, index)}
+                            />
+                        ))}
+                    </div>
+                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>Verify OTP</button>
+                </form>
+            }
             {/* new password form */}
-            <form className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-                <h1 className='text-white text-2xl text-semibold text-center mb-4'>New Password</h1>
-                <p className='text-indigo-300 text-center mb-6'>Enter your new password</p>
-                <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
-                    <img src={assets.lock_icon} alt="person-icon" />
-                    <input
-                        className='bg-transparent outline-none text-white'
-                        type="password"
-                        placeholder='Password'
-                        required
-                        onChange={(e) => setPassword(e.target.value)}
-                        value={password}
-                    />
-                </div>
-                <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>Submit</button>
-            </form>
+            {isOtpSubmitted && isEmailSend &&
+                <form className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm' onSubmit={onSubmitNewPassword}>
+                    <h1 className='text-white text-2xl text-semibold text-center mb-4'>New Password</h1>
+                    <p className='text-indigo-300 text-center mb-6'>Enter your new password</p>
+                    <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
+                        <img src={assets.lock_icon} alt="person-icon" />
+                        <input
+                            className='bg-transparent outline-none text-white'
+                            type="password"
+                            placeholder='Password'
+                            required
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            value={newPassword}
+                        />
+                    </div>
+                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>Submit</button>
+                </form>
+            }
 
         </div>
     )
