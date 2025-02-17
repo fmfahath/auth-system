@@ -21,9 +21,9 @@ export const AppContextProvider = (props) => {
                 setIsLoggedin(true)
                 getUserData()
             }
-            else {
-                toast.error(data.message)
-            }
+            // else {
+            //     toast.error(data.message)
+            // }
 
         } catch (error) {
             toast.error(error.message)
