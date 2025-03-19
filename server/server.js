@@ -10,11 +10,14 @@ const app = express();
 const port = process.env.PORT || 4000;
 const allowedOrgins = [`${process.env.FRONT_END_URL}`]
 
+console.log(allowedOrgins);
+
+
 connectDB();
 
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors({ origin: allowedOrgins, credentials: true }))
+app.use(cors({ origin: process.env.FRONT_END_URL, credentials: true }))
 
 
 //API endpoints
