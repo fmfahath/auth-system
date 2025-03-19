@@ -30,6 +30,7 @@ app.use(cors({
 }))
 app.options('*', cors());
 
+
 //API endpoints
 app.get('/', (req, res) => res.send("API Working on port:4000"))
 app.use('/api/auth', authRouter)
