@@ -8,17 +8,27 @@ import userRouter from './route/userRoute.js'
 
 const app = express();
 const port = process.env.PORT || 4000;
-const allowedOrgins = [process.env.FRONT_END_URL]
+const allowedOrigins = [process.env.FRONT_END_URL]
 
-console.log(allowedOrgins);
-
-
+//connect to database
 connectDB();
 
+
+//middlewares
 app.use(express.json())
 app.use(cookieParser())
-app.use(cors({ origin: process.env.FRONT_END_URL, credentials: true }))
-
+// app.use(cors({ origin: allowedOrgins, credentials: true }))
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}))
+app.options('*', cors());
 
 //API endpoints
 app.get('/', (req, res) => res.send("API Working on port:4000"))
