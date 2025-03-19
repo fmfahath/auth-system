@@ -26,7 +26,9 @@ app.use(cors({
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
+    credentials: true,
+    ethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }))
 app.options('*', cors());
 
