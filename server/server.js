@@ -8,7 +8,7 @@ import userRouter from './route/userRoute.js'
 
 const app = express();
 const port = process.env.PORT || 4000;
-const allowedOrgins = ['http://localhost:5173']
+const allowedOrgins = [`${process.env.FRONT_END_URL}`]
 
 connectDB();
 
